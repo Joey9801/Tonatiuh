@@ -373,7 +373,10 @@ function initialize() {
     var mapOptions = {
         zoom: 6,
         center: new google.maps.LatLng(54.4, -4.5),
-        mapTypeId: google.maps.MapTypeId.ROADMAP
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        disableDefaultUI: true,
+        mapTypeControl: true,
+        
     };
     map = new google.maps.Map(document.getElementById('map-page'),
         mapOptions);
