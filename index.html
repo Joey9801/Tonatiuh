@@ -19,21 +19,21 @@
       <div class="container">
         <div class="navbar-header">
           <button class="navbar-toggle" data-target=".navbar-collapse" data-toggle="collapse" type= "button"><span class="icon-bar"></span><span class="icon-bar"></span> <span class="icon-bar"></span></button>
-          <a class="navbar-brand" id="brand" style="cursor: pointer">IGC file viewer</a>
+          <a class="navbar-brand" id="brand">IGC file viewer</a>
         </div>
 
         
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active" id="map-link" style="cursor: pointer">
+            <li class="active" id="map-link">
               <a>Map</a>
             </li>
-            <li id="stats-link" style="cursor: pointer">
+            <li id="stats-link">
               <a>Stats</a>
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-              <li id="about-link" style="cursor: pointer"><a>About</a></li>
+              <li id="about-link"><a>About</a></li>
             </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -42,21 +42,21 @@
     
     
     
-    <div class="container" style="height:80%">
+    <div class="container">
     
     <!--Map view-->
-      <div class="row" style="padding:0;margin:0;">
-        <div id="map-page" class="map-page" style="-webkit-transform: translateZ(0);"></div>
+      <div class="row">
+        <div id="map-page" class="map-page"></div>
         <div id="sidebar" class="sidebar">
-          <canvas style="height:100%;width:inherit"></canvas>
+          <canvas></canvas>
         </div>
       </div>
     <!--/Map view-->
     
     <!--File Selector-->
       <div class="row" id="file-selector">
-        <div class="col-sm-4 col-sm-offset-3 file-selector" style="padding: 20px; margin-top:-15px ;background:rgba(255, 255, 255, 0.75);">
-          <input type="file" id="input" onchange="fileHandler(this.files)" style="width:100%;" accept=".igc">
+        <div class="col-sm-4 col-sm-offset-3 file-selector">
+          <input type="file" id="input" onchange="fileHandler(this.files)" accept=".igc">
         </div>
       </div>
     <!--/File Selector-->
