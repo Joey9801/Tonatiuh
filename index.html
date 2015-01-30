@@ -4,7 +4,7 @@
     <title>IGC file visualiser</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="igc.css" rel="stylesheet">
+    <link href="main.css" rel="stylesheet">
   </head>
   
   <body>
@@ -28,7 +28,7 @@
             <li class="active" id="map-link" style="cursor: pointer">
               <a>Map</a>
             </li>
-            <li class="" id="stats-link" style="cursor: pointer">
+            <li id="stats-link" style="cursor: pointer">
               <a>Stats</a>
             </li>
           </ul>
@@ -46,8 +46,8 @@
     
     <!--Map view-->
       <div class="row" style="padding:0;margin:0;">
-        <div id="map-page" style="-webkit-transform: translateZ(0);"></div>
-        <div id="sidebar">
+        <div id="map-page" class="map-page" style="-webkit-transform: translateZ(0);"></div>
+        <div id="sidebar" class="sidebar">
           <canvas style="height:100%;width:inherit"></canvas>
         </div>
       </div>
@@ -55,7 +55,7 @@
     
     <!--File Selector-->
       <div class="row" id="file-selector">
-        <div class="col-sm-4 col-sm-offset-3 img-rounded" style="padding: 20px; margin-top:-15px ;background:rgba(255, 255, 255, 0.75);">
+        <div class="col-sm-4 col-sm-offset-3 file-selector" style="padding: 20px; margin-top:-15px ;background:rgba(255, 255, 255, 0.75);">
           <input type="file" id="input" onchange="fileHandler(this.files)" style="width:100%;" accept=".igc">
         </div>
       </div>
@@ -91,6 +91,7 @@
         
       </div>
     <!--/About Page-->
+
     </div><!--/container-->
   </body>
   
