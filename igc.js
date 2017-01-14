@@ -45,20 +45,20 @@ var scales = {'vario': {'min': -10,
 $("li").click(function() {
     link = "#" + $(this).attr('id');
     page = link.split("-")[0]+"-page";
-      
+
     //hide other pages and show the linked one
     $("div[id*='-page']").hide();
     $(page).show();
-    
+
     //set all links inactive and the clicked on active
     $("li[id*='-link']").removeClass("active");
     $(link).addClass("active");
-    
+
     if(link=="#about-link")
         $("#file-selector").hide();
     else
         $("#file-selector").show();
-   
+
     if(link=="#stats-link")
         displayStatistics(flight);
     if(link=="#map-link")
@@ -73,7 +73,7 @@ $(".navbar-brand").click(function() {
 function displayStatistics(flight) {
     //Fill in the stats page with all sorts of interesting information
     //TODO
-    
+
     var options = {'legend': {position: 'none'},
                    'chartArea': {'width': '80%', 'height': '80%'},
                    'vAxis': {'textPosition': 'out'}
@@ -88,7 +88,7 @@ function displayStatistics(flight) {
     }
     speed_chart = new google.visualization.LineChart(document.getElementById('speed_chart'));
     speed_chart.draw(speed_data, speed_options);
-    
+
     var alt_options = options;
     alt_options['title'] = ['Altitude'];
     var alt_data  = new google.visualization.DataTable();
@@ -121,7 +121,7 @@ function drawScale(type){
         var a = scales[type].max - ((scales[type].max - scales[type].min) * y/(h-1));
         ctx.fillStyle = colourMap(a, type);
         ctx.fillRect(0, y, w, dh);
-        
+
         var txt = String(Math.round(a))
         if(type=="vario")
             txt += "kts"
@@ -136,25 +136,31 @@ function drawScale(type){
 //Begin IGC parser//
 ////////////////////
 
-metadataMap = { HFPLTPILOT: "Pilot (P1)",
-                HFCM2CREW2: "Pilot (P2)",
-                HFGTYGLIDERTYPE: "Glider Type",
-                HFGIDGLIDERID: "Glider Reg",
-                HFDTM100GPSDATUM: "GPS Datum",
-                HFFTYFRTYPE: "Logger Type",
-                HFRFWFIRMWAREVERSION: "Firmware Version",
-                HFGPS: "GPS unit",
-                HFCIDCOMPETITIONID: "Competition Number",
-                HFCCLCOMPETITIONCLASS: "Competition Class",
-                HFTZNTIMEZONE: "Timezone"
-              }
+metadataMap = {
+    HFDTE: "Flight Date",
+    HFFXA: "Fix Accuracy",
+    HFPLTPILOTINCHARGE: "Pilot (P1)",
+    HFPLTPILOT: "Pilot (P1)",
+    HFCM2CREW2: "Pilot (P2)",
+    HFGTYGLIDERTYPE: "Glider Type",
+    HFGIDGLIDERID: "Glider Reg",
+    HFDTM100GPSDATUM: "GPS Datum",
+    HFFTYFRTYPE: "Logger Type",
+    HFRFWFIRMWAREVERSION: "Firmware Version",
+    HFRHWHARDWAREVERSION: "Hardware Version",
+    HFGPS: "GPS unit",
+    HFPRSPRESSALTSENSOR: "Pressure Sensor",
+    HFCIDCOMPETITIONID: "Competition Number",
+    HFCCLCOMPETITIONCLASS: "Competition Class",
+    HFTZNTIMEZONE: "Timezone"
+ }
 
 function fileHandler(files) {
     fr = new FileReader();
     fr.onload = function(e) { processIgcFile(e.target.result) }
     file = files[0];
     console.log("Parsing " + file.name);
-    
+
     fr.readAsText(file)
 }
 
@@ -163,31 +169,33 @@ function parseIgcLine(line){
     //TODO handle events (E records)
     //TODO handle B record extensions (I records)
     //TODO handle K records (defined by a J record)
-    if(line[0]=="B" && line[24]=="A"){
+    if (line[0]=="B" && line[24]=="A"){
         //we're dealing with a valid location record
         timeStr = line.slice(1, 7);
         latStr = line.slice(7, 15);
         lonStr = line.slice(15, 24);
         baroAltStr = line.slice(25, 30);
         gpsAltStr = line.slice(30, 35);
-        return new Loc(timeStr, latStr, lonStr, baroAltStr, gpsAltStr)
-    }
-    else if(line[0]=="H"){
-        //we're dealing with some metadata
-        line = line.split(':')
-        if(line.length!=2){
-            //TODO deal with the special case HFDTE and other silly things
-            return 0
+        return new Loc(timeStr, latStr, lonStr, baroAltStr, gpsAltStr);
+    } else if (line[0]=="H") {
+        // We're dealing with some metadata
+        if (line.indexOf(':') != -1) {
+            line = line.split(':');
+        } else {
+            // Special cases such as HFDTE & HFFXA
+            line = [line.substring(0, 5), line.substring(5)];
         }
-        
-        if(!Boolean(metadataMap[line[0]]))
-            return 0
-        
-        return new Meta(metadataMap[line[0]], line[1])
+        line[0] = line[0].toUpperCase();
+
+        if (!Boolean(metadataMap[line[0]])) {
+            return 0;
+        }
+
+        return new Meta(metadataMap[line[0]], line[1]);
     }
-    
-    //Default return, ignores the line
-    return 0
+
+    // Default return, ignores the line
+    return 0;
 }
 
 function processIgcFile(file){
@@ -202,16 +210,16 @@ function processIgcFile(file){
             flight.metadata.push(line);
     }
     console.log("Done\n");
-    
+
     console.log("Computing Statistics");
     flight.computeStatistics();
     console.log("Done\n");
-    
+
     console.log("Plotting trace");
     plotTrace(flight.trace, 'alt');
     fitTrace();
     console.log("Done\n");
-    
+
     if($('#stats-link').hasClass('active'))
         displayStatistics(flight);
 }
@@ -232,7 +240,7 @@ Flight.prototype.computeSpeeds = function() {
     //Computes horizontal and vertical speed, and track at each datapoint
     //Speed is measured at each Loc to the next, therefore final Loc has no speed value (0)
     //Horizontal speed is smoothed with three sample moving average to counter noise in thermals
-    
+
     var t, s, dh;
     var temp_speed = [];
     for(var i=0; i<(this.trace.length-1); i++){
@@ -244,7 +252,7 @@ Flight.prototype.computeSpeeds = function() {
         this.trace[i].track = this.trace[i].calcBearing(this.trace[i+1]);
     }
     this.trace[this.trace.length-1].speed = 0;
-    
+
     for(var i=1; i<(this.trace.length-2); i++){
         this.trace[i].groundSpeed = (temp_speed[i-1] + temp_speed[i] + temp_speed[i+1])/3;
     }
@@ -261,13 +269,13 @@ Flight.prototype.findMaxHeightGain = function() {
 
 function Loc(timeStr, latStr, lonStr, baroAltStr, gpsAltStr){
     this.type = "loc";
-    
+
     this.timeStr = timeStr;
     this.latStr = latStr;
     this.lonStr = lonStr;
     this.baroAltStr = baroAltStr;
     this.gpsAltStr = gpsAltStr;
-    
+
     this.parsePosStrings();
     this.parseAltStrings();
     this.parseTimeString();
@@ -275,28 +283,28 @@ function Loc(timeStr, latStr, lonStr, baroAltStr, gpsAltStr){
 
 Loc.prototype.parsePosStrings = function() {
     //parses latStr and lonStr into nice floats
-    
+
     //lat
     var minutes = Number(this.latStr.slice(-6, -1)/1000)
     var degrees = Number(this.latStr.slice(0, -6))
     var sign = (this.latStr.slice(-1)=="N") ? 1 : -1
-    
+
     this.lat = sign * (degrees + minutes/60);
-    
+
     //lon
     minutes = Number(this.lonStr.slice(-6, -1)/1000)
     degrees = Number(this.lonStr.slice(0, -6))
     sign = (this.lonStr.slice(-1)=="E") ? 1 : -1
-    
+
     this.lon = sign * (degrees + minutes/60);
 }
 
 Loc.prototype.parseAltStrings = function() {
     //parses gpsAltStr and baroAltStr into nice numbers, and consolidates them
-    
+
     this.gpsAlt = Number(this.gpsAltStr);
     this.baroAlt = Number(this.baroAltStr);
-    
+
     //TODO intelligently consolidate the two altitude sources (eg, if one is disconnected)
     this.alt = this.gpsAlt;
 }
@@ -308,10 +316,10 @@ Loc.prototype.parseDateString = function() {
     var month = Number(this.dateString.slice(2, 4)) - 1; //JS months are 0 indexed
     var halfYear = Number(this.dateString.slice(4, 6));
     //We have to make a guess at which century the flight was in
-    //Dear intrepid glider pilots of the year 2080+, 
+    //Dear intrepid glider pilots of the year 2080+,
     //Thanks to the wonderful foresight of the FAI, you will need to change the next line
     var fullYear = (halfYear > 80) ? halfYear+1900 : halfYear + 2000;
-    
+
     this.date = new Date(fullYear, month, day);
 }
 
@@ -349,7 +357,7 @@ Loc.prototype.calcBearing = function(otherLoc) {
     var y = Math.sin(Δλ) * Math.cos(φ2);
     var x = Math.cos(φ1)*Math.sin(φ2) - Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
     var bearing = Math.atan2(y, x).toDegrees();
-    
+
     //normalize for 0->360 (as opposed to -180->+180
     bearing = (bearing < 0) ? (360 + bearing) : bearing;
 
@@ -376,7 +384,7 @@ function initialize() {
         mapTypeId: google.maps.MapTypeId.ROADMAP,
         disableDefaultUI: true,
         mapTypeControl: true,
-        
+
     };
     map = new google.maps.Map(document.getElementById('map-page'),
         mapOptions);
@@ -394,13 +402,13 @@ function plotTrace(trace, shading) {
         polyline = [];
     }
 
-    
+
     if(shading[0]=="#"){
         var path = []
         for(var i=0; i<trace.length-1; i+=1){
             path.push(new google.maps.LatLng(trace[i].lat, trace[i].lon))
         }
-        
+
         polyline = [ new google.maps.Polyline({
                          path: path,
                          strokeColor: shading,
@@ -427,13 +435,13 @@ function plotTrace(trace, shading) {
 
 function fitTrace(){
     var bounds = new google.maps.LatLngBounds();
-    
+
     for(var i=0; i<polyline.length; ++i){
         polyline[i].getPath().forEach(function(latLng) {
             bounds.extend(latLng);
         });
     }
-    
+
     map.fitBounds(bounds);
 };
 
@@ -442,22 +450,22 @@ function fitTrace(){
 //////////////////////////
 
 function colourMap(value, type) {
-    
+
     // Map to a 0-1 range
     var a = (value - scales[type].min)/(scales[type].max - scales[type].min);
     a = (a < 0) ? 0 : ((a > 1) ? 1 : a);
-    
+
     if(type=='vario'){
         // Scrunch the green/cyan range in the middle
         var sign = (a < .5) ? -1 : 1;
         a = sign * Math.pow(2 * Math.abs(a - .5), .35)/2 + .5;
     }
-    
+
     // Linear interpolation between the cold and hot
     var h0 = 259;
     var h1 = 12;
     var h = (h0) * (1 - a) + (h1) * (a);
-    
+
     return pusher.color("hsv", h, 75, 90).hex6();
 };
 
